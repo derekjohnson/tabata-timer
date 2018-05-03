@@ -131,7 +131,7 @@
 
       // Register service worker
       if('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js', {
+        navigator.serviceWorker.register('https://tabatatimer.github.io/tabata-timer/sw.js', {
         scope: '/'
         }).catch(function(err) {
         console.log('Error: ' + err);

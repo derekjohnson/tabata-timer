@@ -1,6 +1,6 @@
 var cacheName = 'bach';
 
-var urlsToCache = ['/tabata-timer'];
+var urlsToCache = ['https://tabatatimer.github.io/tabata-timer'];
 
 self.addEventListener('install', event => {
   function onInstall(event) {
