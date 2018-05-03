@@ -1,3 +1,4 @@
+<!doctype html>
 <html lang="en-GB">
   <head>
     <meta charset="utf-8">
@@ -60,6 +61,8 @@
       const title = document.querySelector('h1');
       const button = document.querySelector('button');
       let countdownInterval = null;
+      let startInterval = null;
+      let endInterval = null;
       title.textContent = 'Ready?';
 
       // Airhorn to start
@@ -96,6 +99,7 @@
           }
         }, 1000);
         cycle();
+        setTimeout(reset, 20*60*1000);
       }
 
       // Keep 'er lit'
@@ -103,10 +107,20 @@
         // Wait 10 seconds then play the start sound
         setTimeout(() => {
           playStartSound();
-          setInterval(playStartSound, 30000);
+          startInterval = setInterval(playStartSound, 30000);
         }, 10000);
         // Play end sound every 30 seconds
-        setInterval(playEndSound, 30000);
+        endInterval = setInterval(playEndSound, 30000);
+      }
+
+      // Put everything back to normal
+      function reset() {
+        body.classList.remove('is-going', 'is-stopped');
+        title.classList.remove('is-on');
+        title.textContent = 'Ready?';
+        clearInterval(startInterval);
+        clearInterval(endInterval);
+        document.body.appendChild(button);
       }
 
       button.addEventListener('click', countdown);
