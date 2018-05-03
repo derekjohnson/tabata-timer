@@ -1,8 +1,10 @@
-var cacheName = 'bach';
+var cacheName = '2';
 
 var urlsToCache = [
-  'https://tabatatimer.github.io/tabata-timer/',
-  'https://tabatatimer.github.io/tabata-timer/index.html'
+  '/tabata-timer/',
+  '/tabata-timer/airhorn.wav',
+  '/tabata-timer/bell.wav',
+  '/tabata-timer/offline.html'
 ];
 
 self.addEventListener('install', event => {
@@ -33,6 +35,7 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   function onFetch (event) {
+    var request = event.request;
     // Cache first
     event.respondWith(fetchFromCache(event)
       .catch(() => fetch(request))
@@ -52,7 +55,7 @@ function addToCache(request, response) {
   return response;
 }
 
-function fetchFromCache (event) {
+function fetchFromCache(event) {
   return caches.match(event.request)
     .then(response => {
       if(!response) {
@@ -64,6 +67,8 @@ function fetchFromCache (event) {
 }
 
 function offlineResponse () {
-  return caches.match('offline.html');
+  if(resourceType === 'content' || resourceType === 'networkOnly') {
+    return caches.match('/offline.html');
+  }
+  return undefined;
 }
-
