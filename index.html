@@ -76,11 +76,39 @@
       let endInterval = null;
       title.textContent = 'Ready?';
 
+      // Web Audio API
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      var context = new AudioContext();
+      var airhorn, bell;
+      function loadSound(url) {
+        var getSound = new XMLHttpRequest();
+        getSound.open('GET', url, true);
+        getSound.responseType = 'arraybuffer';
+        getSound.onload = function() {
+          context.decodeAudioData(getSound.response, function(buffer){
+            if(url.includes('airhorn')) {
+              airhorn = buffer;
+            } else {
+              bell = buffer;
+            }
+          });
+        }
+        getSound.send();
+      }
+      loadSound('airhorn.wav');
+      loadSound('bell.wav');
+
       // Airhorn to start
       function playStartSound() {
-        const airhorn = new Audio('airhorn.wav');
+        /*const airhorn = new Audio('airhorn.wav');
         airhorn.currentTime = 0;
-        airhorn.play();
+        airhorn.play();*/
+        var playSound = context.createBufferSource();
+        playSound.buffer = airhorn;
+        // Link the sound to the output
+        playSound.connect(context.destination); 
+        // Play the sound immediately
+        playSound.start(0);
         title.textContent = 'Go';
         title.classList.add('is-on');
         body.classList.add('is-going');
@@ -89,9 +117,15 @@
 
       // Bell to finish
       function playEndSound() {
-        const bell = new Audio('bell.wav');
+        /*const bell = new Audio('bell.wav');
         bell.currentTime = 0;
-        bell.play();
+        bell.play();*/
+        var playSound = context.createBufferSource();
+        playSound.buffer = bell;
+        // Link the sound to the output
+        playSound.connect(context.destination); 
+        // Play the sound immediately
+        playSound.start(0);
         title.textContent = 'Stop';
         body.classList.remove('is-going');
         body.classList.add('is-stopped');
@@ -135,9 +169,13 @@
         document.body.appendChild(button);
       }
 
-button.addEventListener('click', () => {
-  countdown(cycle);
-});
+      // Listeners
+      button.addEventListener('click', () => {
+        countdown(cycle);
+      });
+
+
+
 
       // Register service worker
       if('serviceWorker' in navigator) {
