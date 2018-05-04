@@ -98,7 +98,7 @@
       }
 
       // 10 second countdown before starting
-      function countdown() {
+      function countdown(callback) {
         button.remove();
         let i = 10;
         title.textContent = i;
@@ -107,10 +107,11 @@
           title.textContent = i;
           if(i === 0) {
             clearInterval(countdownInterval);
+            title.textContent = 'Go';
           }
         }, 1000);
-        cycle();
         setTimeout(reset, 20*60*1000);
+        callback();
       }
 
       // Keep 'er lit'
@@ -134,7 +135,9 @@
         document.body.appendChild(button);
       }
 
-      button.addEventListener('click', countdown);
+button.addEventListener('click', () => {
+  countdown(cycle);
+});
 
       // Register service worker
       if('serviceWorker' in navigator) {
