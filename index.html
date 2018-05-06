@@ -174,8 +174,17 @@
         countdown(cycle);
       });
 
-
-
+      // iOS fix
+      window.addEventListener('touchstart', function() {
+        // Create empty buffer
+        var buffer = myContext.createBuffer(1, 1, 22050);
+        var source = myContext.createBufferSource();
+        source.buffer = buffer;
+        // Connect to output (your speakers)
+        source.connect(myContext.destination);
+        // Play the file
+        source.noteOn(0);
+      });
 
       // Register service worker
       if('serviceWorker' in navigator) {
