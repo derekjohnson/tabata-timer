@@ -1,6 +1,7 @@
 {
   "name": "Tabata Timer",
-  "short_name": "Tabata Timer",
+  "short_name": "Tabata",
+  "start_url": "/tabata-timer/",
   "icons": [{
     "src": "/tabata-timer/homescreen192.png",
     "sizes": "192x192",
