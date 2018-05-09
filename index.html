@@ -64,6 +64,11 @@
   </head>
 
   <body>
+    <div id="settings">
+      <input type="radio" name="total-time" value="10" id="time-10"><label for="time-10">10 minutes</label>
+      <input type="radio" name="total-time" value="20" id="time-20"><label for="time-20">20 minutes</label>
+      <input type="radio" name="total-time" value="30" id="time-30"><label for="time-30">30 minutes</label>
+    </div>
     <h1></h1>
     <button>Go</button>
 
@@ -76,6 +81,17 @@
       let startInterval = null;
       let endInterval = null;
       title.textContent = 'Ready?';
+
+      // Settings
+      let settings = {};
+      const radios = document.getElementById('settings');
+function updateSettings(e) {
+  if(e.target.nodeName.toLowerCase() === 'input') {
+    settings.totalTime = e.target.value;
+  }
+}
+      radios.addEventListener('click', updateSettings);
+
 
       // Web Audio API
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -133,7 +149,7 @@
       }
 
       // 10 second countdown before starting
-      function countdown(callback) {
+      function countdown(totalTime=20, callback) {
         button.remove();
         let i = 10;
         title.textContent = i;
@@ -145,7 +161,7 @@
             title.textContent = 'Go';
           }
         }, 1000);
-        setTimeout(reset, 20*60*1000);
+        setTimeout(reset, totalTime*60*1000);
         callback();
       }
 
@@ -173,7 +189,8 @@
       // Listeners
       button.addEventListener('click', () => {
         context.resume();
-        countdown(cycle);
+        const totalTime = settings.totalTime || undefined;
+        countdown(totalTime, cycle);
       });
 
       // iOS fix
