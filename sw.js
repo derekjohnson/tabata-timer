@@ -1,4 +1,4 @@
-var cacheName = 'hopper';
+var cacheName = 'caravaggio';
 
 var urlsToCache = [
   '/tabata-timer/',
