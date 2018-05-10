@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <meta name="description" content="Simple tabata timer. 10 second countdown then 20 seconds exercise like billy-o, 10 seconds rest. Run for 10, 20 or 30 minutes.">
     <title>Tabata timer</title>
     <link rel="manifest" href="tabata.webmanifest">
     <style>
@@ -53,17 +54,80 @@
         background-image: repeating-linear-gradient(-0.1turn, rgba(0,0,0,.1) 0, rgba(0,0,0,.1) 5px, transparent 5px, transparent 10px);
         outline: none;
       }
+      input[type=radio] {
+        opacity: 0;
+      }
+      label {
+        color: #bbb;
+        display: block;
+        transition: color 0.15s cubic-bezier(0.4, 0, 1, 1);
+      }
+      :checked+label {
+        color: #fff;
+      }
+      details {
+        position: absolute;
+        top: 1em;
+        right: 1em;
+      }
+      summary {
+        color: #bbb;
+        list-style-type: none;
+        text-align: right;
+      }
+      summary:hover,
+      summary:focus {
+        outline: none;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      path {
+        fill: #bbb;
+      }
+      summary:hover path,
+      summary:focus path {
+        fill: #fff;
+      }
+      @supports (transform: translateY(1px)) {
+        #highlight-box {
+          border: 1px solid #fff;
+          display: block;
+          margin: auto -0.5em;
+          padding: 1em;
+          transition: transform 0.15s cubic-bezier(0.4, 0, 1, 1);
+        }
+        #time-10:checked ~ #highlight-box {
+          transform: translateY(-6.375em);
+        }
+        #time-20:checked ~ #highlight-box {
+          transform: translateY(-4em);
+        }
+        #time-30:checked ~ #highlight-box {
+          transform: translateY(-1.625em);
+        }
+      }
     </style>
     <link rel="apple-touch-icon" sizes="180x180" href="/tabata-timer/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/tabata-timer/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/tabata-timer/favicon-16x16.png">
-    <link rel="manifest" href="/tabata-timer/manifest.json">
     <link rel="mask-icon" href="/tabata-timer/safari-pinned-tab.svg" color="#07e896">
     <meta name="msapplication-TileColor" content="#00aba9">
     <meta name="theme-color" content="#07e896">
   </head>
 
   <body>
+    <details>
+      <summary aria-title="Set total running time">
+        <svg baseProfile="tiny" height="24px" id="Layer_1" version="1.2" viewBox="0 0 24 24" width="24px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M9.387,17.548l0.371,1.482C9.891,19.563,10.45,20,11,20h1c0.55,0,1.109-0.437,1.242-0.97l0.371-1.482  c0.133-0.533,0.675-0.846,1.203-0.694l1.467,0.42c0.529,0.151,1.188-0.114,1.462-0.591l0.5-0.867  c0.274-0.477,0.177-1.179-0.219-1.562l-1.098-1.061c-0.396-0.383-0.396-1.008,0.001-1.39l1.096-1.061  c0.396-0.382,0.494-1.084,0.22-1.561l-0.501-0.867c-0.275-0.477-0.933-0.742-1.461-0.591l-1.467,0.42  c-0.529,0.151-1.07-0.161-1.204-0.694l-0.37-1.48C13.109,5.437,12.55,5,12,5h-1c-0.55,0-1.109,0.437-1.242,0.97l-0.37,1.48  C9.254,7.983,8.713,8.296,8.184,8.145l-1.467-0.42C6.188,7.573,5.529,7.839,5.255,8.315l-0.5,0.867  c-0.274,0.477-0.177,1.179,0.22,1.562l1.096,1.059c0.395,0.383,0.395,1.008,0,1.391l-1.098,1.061  c-0.395,0.383-0.494,1.085-0.219,1.562l0.501,0.867c0.274,0.477,0.933,0.742,1.462,0.591l1.467-0.42  C8.712,16.702,9.254,17.015,9.387,17.548z M11.5,10.5c1.104,0,2,0.895,2,2c0,1.104-0.896,2-2,2s-2-0.896-2-2  C9.5,11.395,10.396,10.5,11.5,10.5z"/></svg>
+      </summary>
+      <div id="settings">
+        <input type="radio" name="total-time" value="10" id="time-10"><label for="time-10">10 minutes</label>
+        <input type="radio" name="total-time" value="20" id="time-20" checked><label for="time-20">20 minutes</label>
+        <input type="radio" name="total-time" value="30" id="time-30"><label for="time-30">30 minutes</label>
+        <div id="highlight-box"></div>
+      </div>
+    </details>
     <h1></h1>
     <button>Go</button>
 
@@ -72,10 +136,27 @@
       const body = document.body;
       const title = document.querySelector('h1');
       const button = document.querySelector('button');
+      const details = document.querySelector('details');
       let countdownInterval = null;
       let startInterval = null;
       let endInterval = null;
       title.textContent = 'Ready?';
+
+      // Settings
+      let settings = {};
+      const radios = document.getElementById('settings');
+      function updateSettings(e) {
+        if(e.target.nodeName.toLowerCase() === 'input') {
+          settings.totalTime = e.target.value;
+          localStorage.totalTime = e.target.value;
+        }
+      }
+      radios.addEventListener('click', updateSettings);
+
+      // Update total time setting from localStorage
+      if(localStorage.totalTime) {
+        document.getElementById(`time-${localStorage.totalTime}`).click();
+      }
 
       // Web Audio API
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -133,8 +214,9 @@
       }
 
       // 10 second countdown before starting
-      function countdown(callback) {
+      function countdown(totalTime=20, callback) {
         button.remove();
+        details.remove();
         let i = 10;
         title.textContent = i;
         countdownInterval = setInterval(() => {
@@ -145,7 +227,7 @@
             title.textContent = 'Go';
           }
         }, 1000);
-        setTimeout(reset, 20*60*1000);
+        setTimeout(reset, totalTime*60*1000);
         callback();
       }
 
@@ -165,6 +247,7 @@
         body.classList.remove('is-going', 'is-stopped');
         title.classList.remove('is-on');
         title.textContent = 'Ready?';
+        document.body.insertBefore(details, title);
         clearInterval(startInterval);
         clearInterval(endInterval);
         document.body.appendChild(button);
@@ -173,7 +256,8 @@
       // Listeners
       button.addEventListener('click', () => {
         context.resume();
-        countdown(cycle);
+        const totalTime = settings.totalTime || undefined;
+        countdown(totalTime, cycle);
       });
 
       // iOS fix
