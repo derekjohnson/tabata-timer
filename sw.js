@@ -39,7 +39,6 @@ self.addEventListener('fetch', event => {
     event.respondWith(fetchFromCache(event)
       .catch(() => fetch(request))
       .then(response => addToCache(request, response))
-      .catch(() => offlineResponse())
     )
   }
   onFetch(event);
@@ -63,11 +62,4 @@ function fetchFromCache(event) {
       }
     return response;
   });
-}
-
-function offlineResponse () {
-  if(resourceType === 'content' || resourceType === 'networkOnly') {
-    return caches.match('/offline.html');
-  }
-  return undefined;
 }
