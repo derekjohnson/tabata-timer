@@ -182,9 +182,6 @@
 
       // Airhorn to start
       function playStartSound() {
-        /*const airhorn = new Audio('airhorn.wav');
-        airhorn.currentTime = 0;
-        airhorn.play();*/
         var playSound = context.createBufferSource();
         playSound.buffer = airhorn;
         // Link the sound to the output
@@ -199,9 +196,6 @@
 
       // Bell to finish
       function playEndSound() {
-        /*const bell = new Audio('bell.wav');
-        bell.currentTime = 0;
-        bell.play();*/
         var playSound = context.createBufferSource();
         playSound.buffer = bell;
         // Link the sound to the output

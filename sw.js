@@ -4,7 +4,6 @@ var urlsToCache = [
   '/tabata-timer/',
   '/tabata-timer/airhorn.wav',
   '/tabata-timer/bell.wav',
-  '/tabata-timer/offline.html'
 ];
 
 self.addEventListener('install', event => {
