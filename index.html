@@ -55,11 +55,20 @@
         outline: none;
       }
       input[type=radio] {
-        opacity: 0;
+        border: 0;
+        clip: rect(0 0 0 0);
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+        white-space: nowrap;
       }
       label {
         color: #bbb;
         display: block;
+        padding: 0.5em 0;
         transition: color 0.15s cubic-bezier(0.4, 0, 1, 1);
       }
       :checked+label {
@@ -101,10 +110,10 @@
           transform: translateY(-6.375em);
         }
         #time-20:checked ~ #highlight-box {
-          transform: translateY(-4em);
+          transform: translateY(-4.25em);
         }
         #time-30:checked ~ #highlight-box {
-          transform: translateY(-1.625em);
+          transform: translateY(-2.125em);
         }
       }
     </style>
