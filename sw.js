@@ -1,4 +1,4 @@
-var cacheName = 'sagan';
+var cacheName = 'johnLuke';
 
 var urlsToCache = [
   '/tabata-timer/',
