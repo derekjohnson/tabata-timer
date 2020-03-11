@@ -1,11 +1,21 @@
 <!doctype html>
-<html lang="en-GB">
+<html class="no-es6" lang="en-GB">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
     <meta name="description" content="Simple tabata timer. 10 second countdown then 20 seconds exercise like billy-o, 10 seconds rest. Run for 10, 20 or 30 minutes.">
     <title>Tabata timer</title>
     <link rel="manifest" href="tabata.webmanifest">
+    <script>
+      var str = 'class ಠ extends Array{constructor(j=`a`,...c){const q=(({u: e})=>{return {[`${c}`]:Symbol(j)};})({});super(j,q,...c)}}new Promise(f=>{const a=function*(){return "\u{20BB7}".match(/./u)[0].length===2||!0};for (let z of a()){const [x,y,w,k]=[new Set(),new WeakSet(),new Map(), new WeakMap()];break}f(new Proxy({},{get:(h,i) =>i in h ?h[i]:"j".repeat(0o2)}))}).then(t => new ಠ(t.d))';
+      try {
+        eval(str);
+        document.documentElement.className = 'es6';
+      } catch(e) {
+        // do nothing
+      }
+    </script>
+    <link rel="stylesheet" href="no-es6.css">
     <style>
       html {
         height: 100%;
@@ -142,147 +152,150 @@
     <button>Go</button>
 
     <script>
-      // Setup
-      const body = document.body;
-      const title = document.querySelector('h1');
-      const button = document.querySelector('button');
-      const details = document.querySelector('details');
-      let countdownInterval = null;
-      let startInterval = null;
-      let endInterval = null;
-      title.textContent = 'Ready?';
+      if(document.documentElement.className === 'es6') {
+        // Setup
+        const body = document.body;
+        const title = document.querySelector('h1');
+        const button = document.querySelector('button');
+        const details = document.querySelector('details');
+        let countdownInterval = null;
+        let startInterval = null;
+        let endInterval = null;
+        title.textContent = 'Ready?';
 
-      // Settings
-      let settings = {};
-      const radios = document.getElementById('settings');
-      function updateSettings(e) {
-        if(e.target.nodeName.toLowerCase() === 'input') {
-          settings.totalTime = e.target.value;
-          localStorage.totalTime = e.target.value;
+        // Settings
+        let settings = {};
+        const radios = document.getElementById('settings');
+        function updateSettings(e) {
+          if(e.target.nodeName.toLowerCase() === 'input') {
+            settings.totalTime = e.target.value;
+            localStorage.totalTime = e.target.value;
+          }
         }
-      }
-      radios.addEventListener('click', updateSettings);
+        radios.addEventListener('click', updateSettings);
 
-      // Update total time setting from localStorage
-      if(localStorage.totalTime) {
-        document.getElementById(`time-${localStorage.totalTime}`).click();
-      }
+        // Update total time setting from localStorage
+        if(localStorage.totalTime) {
+          document.getElementById(`time-${localStorage.totalTime}`).click();
+        }
 
-      // Web Audio API
-      window.AudioContext = window.AudioContext || window.webkitAudioContext;
-      var context = new AudioContext();
-      var airhorn, bell;
-      function loadSound(url) {
-        var getSound = new XMLHttpRequest();
-        getSound.open('GET', url, true);
-        getSound.responseType = 'arraybuffer';
-        getSound.onload = function() {
-          context.decodeAudioData(getSound.response, function(buffer){
-            if(url.includes('airhorn')) {
-              airhorn = buffer;
-            } else {
-              bell = buffer;
+        // Web Audio API
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        var context = new AudioContext();
+        var airhorn, bell;
+        function loadSound(url) {
+          var getSound = new XMLHttpRequest();
+          getSound.open('GET', url, true);
+          getSound.responseType = 'arraybuffer';
+          getSound.onload = function() {
+            context.decodeAudioData(getSound.response, function(buffer){
+              if(url.includes('airhorn')) {
+                airhorn = buffer;
+              } else {
+                bell = buffer;
+              }
+            });
+          }
+          getSound.send();
+        }
+        loadSound('airhorn.wav');
+        loadSound('bell.wav');
+
+        // Airhorn to start
+        function playStartSound() {
+          var playSound = context.createBufferSource();
+          playSound.buffer = airhorn;
+          // Link the sound to the output
+          playSound.connect(context.destination); 
+          // Play the sound immediately
+          playSound.start(0);
+          title.textContent = 'Go';
+          title.classList.add('is-on');
+          body.classList.add('is-going');
+          body.classList.remove('is-stopped');
+        }
+
+        // Bell to finish
+        function playEndSound() {
+          var playSound = context.createBufferSource();
+          playSound.buffer = bell;
+          // Link the sound to the output
+          playSound.connect(context.destination); 
+          // Play the sound immediately
+          playSound.start(0);
+          title.textContent = 'Stop';
+          body.classList.remove('is-going');
+          body.classList.add('is-stopped');
+        }
+
+        // 10 second countdown before starting
+        function countdown(totalTime=20, callback) {
+          button.remove();
+          details.remove();
+          let i = 10;
+          title.textContent = i;
+          countdownInterval = setInterval(() => {
+            i--;
+            title.textContent = i;
+            if(i === 0) {
+              clearInterval(countdownInterval);
+              title.textContent = 'Go';
             }
+          }, 1000);
+          setTimeout(reset, totalTime*60*1000);
+          callback();
+        }
+
+        // Keep 'er lit'
+        function cycle() {
+          // Wait 10 seconds then play the start sound
+          setTimeout(() => {
+            playStartSound();
+            startInterval = setInterval(playStartSound, 30000);
+          }, 10000);
+          // Play end sound every 30 seconds
+          endInterval = setInterval(playEndSound, 30000);
+        }
+
+        // Put everything back to normal
+        function reset() {
+          body.classList.remove('is-going', 'is-stopped');
+          title.classList.remove('is-on');
+          title.textContent = 'Ready?';
+          document.body.insertBefore(details, title);
+          clearInterval(startInterval);
+          clearInterval(endInterval);
+          document.body.appendChild(button);
+        }
+
+        // Listeners
+        button.addEventListener('click', () => {
+          context.resume();
+          const totalTime = settings.totalTime || undefined;
+          countdown(totalTime, cycle);
+        });
+
+        // iOS fix
+        window.addEventListener('touchstart', function() {
+          // Create empty buffer
+          var buffer = myContext.createBuffer(1, 1, 22050);
+          var source = myContext.createBufferSource();
+          source.buffer = buffer;
+          // Connect to output (your speakers)
+          source.connect(myContext.destination);
+          // Play the file
+          source.noteOn(0);
+        });
+
+        // Register service worker
+        if('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('https://tabatatimer.github.io/tabata-timer/sw.js', {
+          scope: '/tabata-timer/'
+          }).catch(function(err) {
+          console.log('Error: ' + err);
           });
         }
-        getSound.send();
-      }
-      loadSound('airhorn.wav');
-      loadSound('bell.wav');
 
-      // Airhorn to start
-      function playStartSound() {
-        var playSound = context.createBufferSource();
-        playSound.buffer = airhorn;
-        // Link the sound to the output
-        playSound.connect(context.destination); 
-        // Play the sound immediately
-        playSound.start(0);
-        title.textContent = 'Go';
-        title.classList.add('is-on');
-        body.classList.add('is-going');
-        body.classList.remove('is-stopped');
-      }
-
-      // Bell to finish
-      function playEndSound() {
-        var playSound = context.createBufferSource();
-        playSound.buffer = bell;
-        // Link the sound to the output
-        playSound.connect(context.destination); 
-        // Play the sound immediately
-        playSound.start(0);
-        title.textContent = 'Stop';
-        body.classList.remove('is-going');
-        body.classList.add('is-stopped');
-      }
-
-      // 10 second countdown before starting
-      function countdown(totalTime=20, callback) {
-        button.remove();
-        details.remove();
-        let i = 10;
-        title.textContent = i;
-        countdownInterval = setInterval(() => {
-          i--;
-          title.textContent = i;
-          if(i === 0) {
-            clearInterval(countdownInterval);
-            title.textContent = 'Go';
-          }
-        }, 1000);
-        setTimeout(reset, totalTime*60*1000);
-        callback();
-      }
-
-      // Keep 'er lit'
-      function cycle() {
-        // Wait 10 seconds then play the start sound
-        setTimeout(() => {
-          playStartSound();
-          startInterval = setInterval(playStartSound, 30000);
-        }, 10000);
-        // Play end sound every 30 seconds
-        endInterval = setInterval(playEndSound, 30000);
-      }
-
-      // Put everything back to normal
-      function reset() {
-        body.classList.remove('is-going', 'is-stopped');
-        title.classList.remove('is-on');
-        title.textContent = 'Ready?';
-        document.body.insertBefore(details, title);
-        clearInterval(startInterval);
-        clearInterval(endInterval);
-        document.body.appendChild(button);
-      }
-
-      // Listeners
-      button.addEventListener('click', () => {
-        context.resume();
-        const totalTime = settings.totalTime || undefined;
-        countdown(totalTime, cycle);
-      });
-
-      // iOS fix
-      window.addEventListener('touchstart', function() {
-        // Create empty buffer
-        var buffer = myContext.createBuffer(1, 1, 22050);
-        var source = myContext.createBufferSource();
-        source.buffer = buffer;
-        // Connect to output (your speakers)
-        source.connect(myContext.destination);
-        // Play the file
-        source.noteOn(0);
-      });
-
-      // Register service worker
-      if('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('https://tabatatimer.github.io/tabata-timer/sw.js', {
-        scope: '/tabata-timer/'
-        }).catch(function(err) {
-        console.log('Error: ' + err);
-        });
       }
     </script>
   </body>
